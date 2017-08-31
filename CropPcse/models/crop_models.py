@@ -3,8 +3,9 @@
 from django.db import models
 from simulation.models.general_models import ScenarioSpecificBase
 from django.forms.models import model_to_dict
+from .location_models import PCSESoilParameters, PCSESiteParameters
 
-class PCESECropParameters(ScenarioSpecificBase):
+class PCSECropParameters(ScenarioSpecificBase):
     DVSI = models.FloatField()
     WLVGI = models.FloatField()
     WSTI = models.FloatField()
@@ -78,25 +79,31 @@ class PCESECropParameters(ScenarioSpecificBase):
         d["FSOTB"]=self.FSOTB.list()
         return d
 
+    class Meta:
+        verbose_name_plural = "crop parameter sets"
 
-class ParamertersSetBase(models.Model):
+
+class ParametersSetBase(models.Model):
     def list(self):
         d =model_to_dict(self)
         return [v for v in d.values()]
 
+    class Meta:
+        abstract=True
 
-class CropParametersDTSMTB(ParamertersSetBase):
+
+class CropParametersDTSMTB(ParametersSetBase):
     """daily increase in temp. sum as function of av. temp. [cel; cel d]"""
-    crop = models.OneToOneField(PCESECropParameters, on_delete=models.CASCADE, primary_key=True, related_name="DTSMTB")
+    crop = models.OneToOneField(PCSECropParameters, on_delete=models.CASCADE, primary_key=True, related_name="DTSMTB")
     a = models.FloatField()
     b = models.FloatField()
     c = models.FloatField()
     d = models.FloatField()
 
 
-class CropParametersRDRT(ParamertersSetBase):
+class CropParametersRDRT(ParametersSetBase):
     """Interpolation functions"""
-    crop = models.OneToOneField(PCESECropParameters, on_delete=models.CASCADE, primary_key=True, related_name="RDRT")
+    crop = models.OneToOneField(PCSECropParameters, on_delete=models.CASCADE, primary_key=True, related_name="RDRT")
     a = models.FloatField()
     b = models.FloatField()
     c = models.FloatField()
@@ -108,9 +115,9 @@ class CropParametersRDRT(ParamertersSetBase):
     i = models.FloatField()
     j = models.FloatField()
 
-class CropParametersSLACF(ParamertersSetBase):
+class CropParametersSLACF(ParametersSetBase):
     """Leaf area correction function as a function of development stage, DVS"""
-    crop = models.OneToOneField(PCESECropParameters, on_delete=models.CASCADE, primary_key=True, related_name="SLACF")
+    crop = models.OneToOneField(PCSECropParameters, on_delete=models.CASCADE, primary_key=True, related_name="SLACF")
     a = models.FloatField()
     b = models.FloatField()
     c = models.FloatField()
@@ -119,9 +126,9 @@ class CropParametersSLACF(ParamertersSetBase):
     f = models.FloatField()
 
 
-class CropParametersNMXLV(ParamertersSetBase):
+class CropParametersNMXLV(ParametersSetBase):
     """Maximum N concentration in the leaves, from which the N-conc.values of the stem and roots are derived, as a function of development stage."""
-    crop = models.OneToOneField(PCESECropParameters, on_delete=models.CASCADE, primary_key=True, related_name="NMXLV")
+    crop = models.OneToOneField(PCSECropParameters, on_delete=models.CASCADE, primary_key=True, related_name="NMXLV")
     a = models.FloatField()
     b = models.FloatField()
     c = models.FloatField()
@@ -137,8 +144,8 @@ class CropParametersNMXLV(ParamertersSetBase):
 
 
 # ********** Partitioning coefficients ***********************************
-class CropParametersFRTTB(ParamertersSetBase):
-    crop = models.OneToOneField(PCESECropParameters, on_delete=models.CASCADE, primary_key=True, related_name="FRTTB")
+class CropParametersFRTTB(ParametersSetBase):
+    crop = models.OneToOneField(PCSECropParameters, on_delete=models.CASCADE, primary_key=True, related_name="FRTTB")
     a = models.FloatField()
     b = models.FloatField()
     c = models.FloatField()
@@ -153,8 +160,8 @@ class CropParametersFRTTB(ParamertersSetBase):
     l = models.FloatField()
 
 
-class CropParametersFLVTB(ParamertersSetBase):
-    crop = models.OneToOneField(PCESECropParameters, on_delete=models.CASCADE, primary_key=True, related_name="FLVTB")
+class CropParametersFLVTB(ParametersSetBase):
+    crop = models.OneToOneField(PCSECropParameters, on_delete=models.CASCADE, primary_key=True, related_name="FLVTB")
     a = models.FloatField()
     b = models.FloatField()
     c = models.FloatField()
@@ -171,8 +178,8 @@ class CropParametersFLVTB(ParamertersSetBase):
     n = models.FloatField()
 
 
-class CropParametersFSTTB(ParamertersSetBase):
-    crop = models.OneToOneField(PCESECropParameters, on_delete=models.CASCADE, primary_key=True, related_name="FSTTB")
+class CropParametersFSTTB(ParametersSetBase):
+    crop = models.OneToOneField(PCSECropParameters, on_delete=models.CASCADE, primary_key=True, related_name="FSTTB")
     a = models.FloatField()
     b = models.FloatField()
     c = models.FloatField()
@@ -190,7 +197,7 @@ class CropParametersFSTTB(ParamertersSetBase):
 
 
 class CropParametersFSOTB(models.Model):
-    crop = models.OneToOneField(PCESECropParameters, on_delete=models.CASCADE, primary_key=True, related_name="FSOTB")
+    crop = models.OneToOneField(PCSECropParameters, on_delete=models.CASCADE, primary_key=True, related_name="FSOTB")
     a = models.FloatField()
     b = models.FloatField()
     c = models.FloatField()
@@ -206,5 +213,7 @@ class CropParametersFSOTB(models.Model):
     m = models.FloatField()
     n = models.FloatField()
 
-
-
+class CropInstance(ScenarioSpecificBase):
+    crop = models.OneToOneField(PCSECropParameters)
+    soil = models.OneToOneField(PCSESoilParameters)
+    site = models.OneToOneField(PCSESiteParameters)
